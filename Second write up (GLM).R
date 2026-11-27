@@ -1,4 +1,7 @@
 library(MASS)
+library(ggplot2)
+library(patchwork)
+
 dat = read.csv("Eulaema.csv")
 
 #Check distribution of bee abundance
@@ -31,9 +34,7 @@ m_nb <- glm.nb(
 summary(m_nb)
 deviance(m_nb) / df.residual(m_nb)
 
-
 #--------------Results table----------------------------------------------------
-
 #Extract negative binomial model results
 results <- summary(m_nb)$coefficients
 
@@ -50,21 +51,23 @@ results_table <- data.frame(
 results_table[, -1] <- signif(results_table[, -1], 3)
 results_table
 
-#-------------Forest cover plot-------------------------------------------------
-
-ggplot(dat, aes(x = forest., y = Eulaema_nigrita)) +
+#--------Plots------------------------------------------------------------------
+#A: Forest cover
+p1 <- ggplot(dat, aes(x = forest., y = Eulaema_nigrita)) +
   geom_point(color = "grey40", alpha = 0.6) +
   geom_smooth(method = "glm.nb", formula = y ~ x, color = "black") +
   theme_bw() +
-  coord_cartesian(ylim = c(0, 750)) +
-  coord_cartesian(xlim = c(0.044, 1))
+  coord_cartesian(xlim = c(0.044, 1), ylim = c(0, 700)) +
+  labs(x = "Forest cover", y = expression(italic("Eulaema nigrita") ~ " abundance"))
 
-
-#-------------MAP plot----------------------------------------------------------
-
-ggplot(dat, aes(x = MAP, y = Eulaema_nigrita)) +
+#B: MAP
+p2 <- ggplot(dat, aes(x = MAP, y = Eulaema_nigrita)) +
   geom_point(color = "grey40", alpha = 0.6) +
   geom_smooth(method = "glm.nb", formula = y ~ x, color = "black") +
   theme_bw() +
-  coord_cartesian(ylim = c(0, 750)) +
-  coord_cartesian(xlim = c(735, NA))
+  coord_cartesian(xlim = c(735, NA), ylim = c(0, 700)) +
+  labs(x = "MAP", y = expression(italic("Eulaema nigrita") ~ " abundance"))
+
+#Combine plots
+p1 + p2 + plot_annotation(tag_levels = "A")
+
